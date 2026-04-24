@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
+#include <Stepper.h>
 
 // Define pins
+// 12V motor
 const int dirPin = 2;
 const int stepPin = 3;
 const int sleepPin = 4;
@@ -11,6 +13,14 @@ const int MS1 = 7;
 const int MS0 = 8;
 const int enablePin = 9;
 
+// 5V motor
+const int IN1 = 10;
+const int IN2 = 11;
+const int IN3 = 12;
+const int IN4 = 13;
+const int stepsPerRevolution = 2048;
+
+// Misc
 const int joyPinY = 14;
 const int joyPinX = 15;
 const int buttonPin = 16;
@@ -20,15 +30,16 @@ const int deadzone = 15; // arbritære tal
 
 #define motorInterfaceType 1
 
-AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
+AccelStepper myStepper12V(motorInterfaceType, stepPin, dirPin);
+Stepper myStepper5V(stepsPerRevolution, IN1, IN2, IN3, IN4);
 
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
 
-  myStepper.setMaxSpeed(30000);
-  myStepper.setAcceleration(800);
-  myStepper.setSpeed(3000);
+  myStepper12V.setMaxSpeed(1000);
+  myStepper12V.setAcceleration(800);
+  myStepper12V.setSpeed(1000);
   
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
@@ -60,28 +71,27 @@ void setup(){
   digitalWrite(sleepPin, HIGH);
   digitalWrite(resetPin, HIGH);
   
+  myStepper5V.setSpeed(18);
 }
 
 void loop(){
-  int buttonState = digitalRead(buttonPin);
-  Serial.println(buttonState);
-  
-  if(buttonState == 0){
+  int triggerState = Serial.read();
+  if(triggerState == 0){
     digitalWrite(relayPin, HIGH);
-    myStepper.moveTo(300);
-    while(myStepper.currentPosition() < 300){
-        myStepper.run();
+    delay(1000);
+    myStepper12V.moveTo(300);
+    while(myStepper12V.currentPosition() < 300){
+        myStepper12V.run();
     }
-  }else{
     digitalWrite(relayPin, LOW);
-    myStepper.moveTo(0);
-    while(myStepper.currentPosition() > 0){
-        myStepper.run();
+    myStepper12V.moveTo(0);
+    while(myStepper12V.currentPosition() > 0){
+        myStepper12V.run();
     }
+    delay(200);
+    myStepper5V.step(960);
+
   }
 
-  myStepper.run();
+  myStepper12V.run();
 }
-
-
- 

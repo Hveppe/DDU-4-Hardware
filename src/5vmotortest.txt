@@ -1,0 +1,32 @@
+#include <Arduino.h>
+#include <Stepper.h>
+
+// 28BYJ-48 has 2048 steps per revolution (approx)
+const int stepsPerRevolution = 2048;
+
+// Initialize stepper (IN1, IN3, IN2, IN4 order usually works)
+Stepper myStepper(stepsPerRevolution, 10, 11, 12, 13);
+
+// Button pin
+int buttonPin = 16;
+int lastButtonState = HIGH;
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP);
+  myStepper.setSpeed(18); // RPM (slow is better for this motor)
+}
+
+void loop() {
+  int buttonState = digitalRead(buttonPin);
+
+  // Detect button press
+  if (buttonState == LOW && lastButtonState == HIGH) {
+
+    // Rotate a fixed amount (e.g. 1/4 turn)
+    myStepper.step(960);
+
+    delay(200); // debounce
+  }
+
+  lastButtonState = buttonState;
+}
